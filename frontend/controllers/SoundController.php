@@ -66,23 +66,20 @@ class SoundController extends Controller
     public function actionCreate()
     {
         $model = new Sound();
+        $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            // save the uploaded file
-            if($model->soundFile = UploadedFile::getInstance($model, 'soundFile')) {
-                $model->generateFilename($model->soundFile->extension);
-                $model->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$model->filename);
-                // Set null so ->save() doesn't throw an error
-                $model->soundFile = null;
-                if($model->save()) {
-                    return $this->redirect(['view', 'id' => $model->id]);
-                } else {
-                    return $this->render('create', [
-                        'model' => $model,
-                    ]);
-                }
+            $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
+            $model->generateFilename();
+            $model->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$model->filename);
+            // Set null so ->save() doesn't throw an error
+            $model->soundFile = null;
+            if($model->save()) {
+                return $this->redirect(['view', 'id' => $model->id]);
             } else {
-                $model->addError('soundFile', Yii::t('common', 'No file uploaded'));
+                return $this->render('create', [
+                    'model' => $model,
+                ]);
             }
         }
         return $this->render('create', [
@@ -99,9 +96,21 @@ class SoundController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        // Get the uploaded file for validating
+        $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            // Set soundFile again, because after validate soundFile is a string
+            $this->saveFile($model);
+            // Set null so ->save() doesn't throw an error
+            $model->soundFile = null;
+            if($model->save()) {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else {
+                return $this->render('update', [
+                    'model' => $model,
+                ]);
+            }
         } else {
             return $this->render('update', [
                 'model' => $model,
@@ -136,5 +145,20 @@ class SoundController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    /**
+     * @param $model Sound
+     */
+    private function saveFile($model)
+    {
+        // Check if old file has to be deleted
+        $model->deleteOldFile();
+        // Get the file
+        $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
+        // Generate new name for file
+        $model->generateFilename();
+        // Save it
+        $model->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$model->filename);
     }
 }

@@ -30,15 +30,18 @@ use yii\web\UploadedFile;
 class Sound extends ActiveRecord
 {
 
-    public static $SUPPORTED_EXTENSIONS = [
+    const SUPPORTED_EXTENSIONS = [
         '3gp',
         'mp3',
-        'acc',
+        'aac',
         'flac',
         'ogg',
         'wav',
     ];
 
+    /**
+     * @var $soundFile UploadedFile
+     */
     public $soundFile;
 
     /**
@@ -65,7 +68,7 @@ class Sound extends ActiveRecord
             [['name'], 'required'],
             [['created_by', 'updated_by', 'created_at', 'updated_at'], 'integer'],
             [['name', 'filename'], 'string', 'max' => 255],
-            [['soundFile'], 'file', 'extensions' => implode(', ',self::$SUPPORTED_EXTENSIONS)],
+            [['soundFile'], 'file', 'extensions' => implode(', ',self::SUPPORTED_EXTENSIONS)],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],
             [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'id']],
         ];
@@ -113,7 +116,11 @@ class Sound extends ActiveRecord
     }
 
     public function beforeDelete() {
-        return parent::beforeDelete() && $this->deleteFile() ? true : false;
+        if(parent::beforeDelete()) {
+            $this->deleteFile();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -127,12 +134,11 @@ class Sound extends ActiveRecord
 
     /**
      * Generates the filename for the sound file
-     * @param $extension
      * @return string The generated filename
      */
-    public function generateFilename($extension) {
+    public function generateFilename() {
         if(!isset($this->filename)) {
-            $this->filename = substr(hash('md5',time()),0,8).'.'.$extension;
+            $this->filename = md5(time()).'.'.$this->soundFile->extension;
         }
         return $this->filename;
     }
@@ -150,9 +156,21 @@ class Sound extends ActiveRecord
 
     public function supportedExtensionsForFileInput() {
         $tmp = [];
-        foreach(self::$SUPPORTED_EXTENSIONS as $sup_ext) {
+        foreach(self::SUPPORTED_EXTENSIONS as $sup_ext) {
             $tmp[] = 'audio/'.$sup_ext;
         }
         return implode(',',$tmp);
+    }
+
+    /**
+     * Check if old file exists and delete
+     * @return bool True if deleted (or already deleted) and false if deleting goes wrong
+     */
+    public function deleteOldFile()
+    {
+        if(file_exists(Yii::getAlias('@uploadPath').'/'.$this->filename)) {
+            return unlink(Yii::getAlias('@uploadPath') . '/' . $this->filename);
+        }
+        return true;
     }
 }

@@ -27,7 +27,7 @@ class SoundUploadForm extends Model {
 
     public function rules() {
         return [
-            [['soundFile'], 'file', 'extensions' => implode(', ',Sound::$SUPPORTED_EXTENSIONS)],
+            [['soundFile'], 'file', 'extensions' => implode(', ',Sound::SUPPORTED_EXTENSIONS)],
         ];
     }
 

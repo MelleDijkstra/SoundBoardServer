@@ -16,8 +16,10 @@ return [
     /** Actions */
     'Create'            => 'Aanmaken',
     'Update'            => 'Aanpassen',
+    'Delete'            => 'Verwijderen',
     'Create {model}'    => '{model} aanmaken',
     'Update {model}'    => '{model} aanpassen',
+    'Delete {model}'    => '{model} verwijderen',
 
     /** Common attributes */
     'ID'         => 'ID',
