@@ -2,7 +2,6 @@
 
 namespace frontend\controllers;
 
-use frontend\models\SoundUploadForm;
 use Yii;
 use common\models\Sound;
 use common\models\search\SoundSearch;
@@ -69,9 +68,7 @@ class SoundController extends Controller
         $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
-            $model->generateFilename();
-            $model->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$model->filename);
+            $this->saveFile($model);
             // Set null so ->save() doesn't throw an error
             $model->soundFile = null;
             if($model->save()) {
@@ -100,7 +97,6 @@ class SoundController extends Controller
         $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            // Set soundFile again, because after validate soundFile is a string
             $this->saveFile($model);
             // Set null so ->save() doesn't throw an error
             $model->soundFile = null;
@@ -148,17 +144,19 @@ class SoundController extends Controller
     }
 
     /**
-     * @param $model Sound
+     * @param $sound Sound
      */
-    private function saveFile($model)
+    private function saveFile(Sound $sound)
     {
-        // Check if old file has to be deleted
-        $model->deleteOldFile();
         // Get the file
-        $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
-        // Generate new name for file
-        $model->generateFilename();
-        // Save it
-        $model->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$model->filename);
+        $sound->soundFile = UploadedFile::getInstance($sound, 'soundFile');
+        if($sound->soundFile) {
+            // Check if old file has to be deleted
+            $sound->deleteFile();
+            // Generate new name for file
+            $sound->generateFilename();
+            // Save it
+            $sound->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$sound->filename);
+        }
     }
 }

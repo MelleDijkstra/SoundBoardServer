@@ -37,6 +37,17 @@ return [
                 ],
             ],
         ],
+        'response'   => [
+            'format'  => yii\web\Response::FORMAT_JSON,
+            'charset' => 'UTF-8',
+        ],
+        'request'    => [
+            'class'                  => '\yii\web\Request',
+            'enableCookieValidation' => false,
+            'parsers'                => [
+                'application/json' => 'yii\web\JsonParser',
+            ],
+        ],
         'urlManager' => [
             'enablePrettyUrl' => true,
             'enableStrictParsing' => true,
@@ -44,7 +55,10 @@ return [
             'rules' => [
                 [
                     'class' => 'yii\rest\UrlRule',
-                    'controller' => 'v1/sound',
+                    'pluralize' => true,
+                    'controller' => [
+                        'v1/sound',
+                    ],
                     'tokens' => [ '{id}' => '<id:\\w+>' ]
                 ]
             ],

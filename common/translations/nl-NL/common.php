@@ -12,6 +12,7 @@ return [
     'Search' => 'Zoeken',
     'Reset'  => 'Resetten',
     'No file uploaded' => 'Geen bestand geupload',
+    'Are you sure you want to delete this item?' => 'Weet u zeker dat u dit item wilt verwijderen?',
 
     /** Actions */
     'Create'            => 'Aanmaken',

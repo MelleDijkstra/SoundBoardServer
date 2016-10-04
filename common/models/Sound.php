@@ -115,6 +115,10 @@ class Sound extends ActiveRecord
         return Yii::getAlias('@soundsPath').'/'.$this->filename;
     }
 
+    /**
+     * Check if file exists
+     * @return bool
+     */
     public function beforeDelete() {
         if(parent::beforeDelete()) {
             $this->deleteFile();
@@ -146,10 +150,9 @@ class Sound extends ActiveRecord
     /**
      * Deletes the file associated with this sound record
      */
-    protected function deleteFile() {
-        $file = Yii::getAlias('@uploadPath').'/'.$this->filename;
-        if(file_exists($file)) {
-            return unlink($file);
+    public function deleteFile() {
+        if(!empty($this->filename) && file_exists(Yii::getAlias('@uploadPath').'/'.$this->filename)) {
+            return unlink(Yii::getAlias('@uploadPath').'/'.$this->filename);
         }
         return true;
     }
@@ -160,17 +163,5 @@ class Sound extends ActiveRecord
             $tmp[] = 'audio/'.$sup_ext;
         }
         return implode(',',$tmp);
-    }
-
-    /**
-     * Check if old file exists and delete
-     * @return bool True if deleted (or already deleted) and false if deleting goes wrong
-     */
-    public function deleteOldFile()
-    {
-        if(file_exists(Yii::getAlias('@uploadPath').'/'.$this->filename)) {
-            return unlink(Yii::getAlias('@uploadPath') . '/' . $this->filename);
-        }
-        return true;
     }
 }
