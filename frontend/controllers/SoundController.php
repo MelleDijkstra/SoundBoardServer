@@ -5,6 +5,7 @@ namespace frontend\controllers;
 use Yii;
 use common\models\Sound;
 use common\models\search\SoundSearch;
+use yii\base\Exception;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -68,7 +69,12 @@ class SoundController extends Controller
         $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $this->saveFile($model);
+            if(!$this->saveFile($model)) {
+                $model->addError('file_name',"Couldn't save file for some reason");
+                return $this->render('create', [
+                    'model' => $model,
+                ]);
+            }
             // Set null so ->save() doesn't throw an error
             $model->soundFile = null;
             if($model->save()) {
@@ -145,6 +151,7 @@ class SoundController extends Controller
 
     /**
      * @param $sound Sound
+     * @return bool Returns true if no file was uploaded or
      */
     private function saveFile(Sound $sound)
     {
@@ -156,7 +163,8 @@ class SoundController extends Controller
             // Generate new name for file
             $sound->generateFilename();
             // Save it
-            $sound->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$sound->filename);
+            return $sound->soundFile->saveAs(Yii::getAlias('@uploadPath').'/'.$sound->filename);
         }
+        return true;
     }
 }

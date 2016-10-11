@@ -6,6 +6,7 @@ use Yii;
 use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\validators\FileValidator;
 use yii\web\UploadedFile;
 
 /**
@@ -39,6 +40,8 @@ class Sound extends ActiveRecord
         'wav',
     ];
 
+    const MAX_FILESIZE = 1024 * 1024 * 8;
+
     /**
      * @var $soundFile UploadedFile
      */
@@ -68,7 +71,7 @@ class Sound extends ActiveRecord
             [['name'], 'required'],
             [['created_by', 'updated_by', 'created_at', 'updated_at'], 'integer'],
             [['name', 'filename'], 'string', 'max' => 255],
-            [['soundFile'], 'file', 'extensions' => implode(', ',self::SUPPORTED_EXTENSIONS)],
+            [['soundFile'], 'file', 'extensions' => implode(', ',self::SUPPORTED_EXTENSIONS), 'maxSize' => Sound::MAX_FILESIZE],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],
             [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'id']],
         ];
@@ -143,6 +146,17 @@ class Sound extends ActiveRecord
     public function generateFilename() {
         if(!isset($this->filename)) {
             $this->filename = md5(time()).'.'.$this->soundFile->extension;
+        }
+        return $this->filename;
+    }
+
+    /**
+     * Overwrites the __get() for filename
+     * It generates a filename if not yet exists
+     */
+    public function getFilename() {
+        if(empty($this->filename)) {
+            $this->generateFilename();
         }
         return $this->filename;
     }

@@ -6,6 +6,8 @@
  * Time: 23:13
  */
 
+Yii::setAlias('api', dirname(dirname(__DIR__)) . '/api');
+
 $params = array_merge(
     require(__DIR__ . '/../../common/config/params.php'),
     require(__DIR__ . '/../../common/config/params-local.php'),
@@ -27,6 +29,7 @@ return [
         'user' => [
             'identityClass' => 'common\models\User',
             'enableAutoLogin' => false,
+            'loginUrl'        => null,
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -41,8 +44,11 @@ return [
             'format'  => yii\web\Response::FORMAT_JSON,
             'charset' => 'UTF-8',
         ],
+        'formatters' => [
+            'class' => 'yii\web\JsonResponseFormatter',
+            'prettyPrint' => YII_DEBUG, // use "pretty" output in debug mode
+        ],
         'request'    => [
-            'class'                  => '\yii\web\Request',
             'enableCookieValidation' => false,
             'parsers'                => [
                 'application/json' => 'yii\web\JsonParser',
@@ -54,15 +60,14 @@ return [
             'showScriptName' => false,
             'rules' => [
                 [
-                    'class' => 'yii\rest\UrlRule',
-                    'pluralize' => true,
+                    'class'      => 'yii\rest\UrlRule',
+                    'pluralize'  => true,
                     'controller' => [
                         'v1/sound',
                     ],
-                    'tokens' => [ '{id}' => '<id:\\w+>' ]
-                ]
+                ],
             ],
-        ]
+        ],
     ],
     'params' => $params,
 ];
