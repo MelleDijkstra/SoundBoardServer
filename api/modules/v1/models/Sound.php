@@ -19,7 +19,6 @@ class Sound extends \common\models\Sound
     {
         $fields = parent::fields();
 
-        unset($fields['filename']);
         unset($fields['created_by']);
         unset($fields['updated_by']);
         // Make sure we have a file

@@ -6,6 +6,7 @@ use Yii;
 use common\models\Sound;
 use common\models\search\SoundSearch;
 use yii\base\Exception;
+use yii\behaviors\TimestampBehavior;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -67,6 +68,13 @@ class SoundController extends Controller
     {
         $model = new Sound();
         $model->soundFile = UploadedFile::getInstance($model, 'soundFile');
+
+        if(!$model->soundFile) {
+            $model->addError('soundFile', Yii::t('sound', 'A file should be uploaded!'));
+            return $this->render('create', [
+                'model' => $model,
+            ]);
+        }
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if(!$this->saveFile($model)) {
@@ -150,7 +158,7 @@ class SoundController extends Controller
     }
 
     /**
-     * @param $sound Sound
+     * @param $sound Sound|TimestampBehavior
      * @return bool Returns true if no file was uploaded or
      */
     private function saveFile(Sound $sound)
@@ -158,6 +166,7 @@ class SoundController extends Controller
         // Get the file
         $sound->soundFile = UploadedFile::getInstance($sound, 'soundFile');
         if($sound->soundFile) {
+            if(!$sound->isNewRecord) $sound->touch('soundFile');
             // Check if old file has to be deleted
             $sound->deleteFile();
             // Generate new name for file

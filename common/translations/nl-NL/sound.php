@@ -14,4 +14,7 @@ return [
     'Name'      => 'Naam',
     'Filename'  => 'Bestandsnaam',
     'Sound File' => 'Geluids Bestand',
+
+    /** Messages */
+    'A file should be uploaded!' => 'Een bestand moet geupload worden!',
 ];

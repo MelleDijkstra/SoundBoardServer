@@ -65,6 +65,9 @@ return [
                     'controller' => [
                         'v1/sound',
                     ],
+                    'extraPatterns' => [
+                        'GET changes/<timestamp>' => 'changes',
+                    ],
                 ],
             ],
         ],
